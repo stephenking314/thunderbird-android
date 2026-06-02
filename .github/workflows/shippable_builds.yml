@@ -51,6 +51,7 @@ jobs:
               "refs/heads/main": "thunderbird_daily",
               "refs/heads/beta": "thunderbird_beta",
               "refs/heads/release": "thunderbird_release",
+              "refs/heads/contributors_tweaked": "thunderbird_beta"
             };
 
             if (context.ref in RELEASE_ENVS) {
@@ -348,13 +349,6 @@ jobs:
           cat $GITHUB_NOTES_FILE >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
-          echo "<h2>${APPLICATION_LABEL} ${FULL_VERSION_NAME} Release Notes (${VERSION_CODE})</h2>" | tee -a $GITHUB_STEP_SUMMARY
-          echo -e "Summarized Version Notes\n\n\`\`\`" | tee -a $GITHUB_STEP_SUMMARY
-          cat ./app-metadata/${APPLICATION_ID}/en-US/changelogs/${VERSION_CODE}.txt | tee -a $GITHUB_STEP_SUMMARY
-          echo -e "\n\`\`\`\n\nLong Version Notes\n\n\`\`\`" | tee -a $GITHUB_STEP_SUMMARY
-          cat $GITHUB_NOTES_FILE | tee -a $GITHUB_STEP_SUMMARY
-          echo -e "\`\`\`" | tee -a $GITHUB_STEP_SUMMARY
-
       - name: Validate Release Notes Length
         if: "${{ contains(matrix.releaseTarget, 'github') && contains(fromJSON('[\"beta\", \"release\"]'), needs.dump_config.outputs.releaseType) }}"
         shell: bash
@@ -409,7 +403,6 @@ jobs:
           git commit -m "Release: ${APPLICATION_LABEL} ${FULL_VERSION_NAME}"
           git diff HEAD~1 HEAD
           git log -n 5
-          git push
           set +x
 
           echo "${APP_NAME}_sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
@@ -463,6 +456,11 @@ jobs:
           echo -e "\n\n\`\`\`" | tee -a $GITHUB_STEP_SUMMARY
           cat $CONTRIBUTORS_FILE | tee -a $GITHUB_STEP_SUMMARY
           echo -e "\`\`\`" | tee -a $GITHUB_STEP_SUMMARY
+
+          echo
+          echo "---------------------"
+          echo
+          cat "$GITHUB_OUTPUT"
 
       - name: Summary
         if: ${{ contains(matrix.releaseTarget, 'github') || needs.dump_config.outputs.releaseType == 'daily' }}

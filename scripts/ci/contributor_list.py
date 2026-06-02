@@ -97,10 +97,15 @@ def get_first_contributions(repo, contributors):
 
 
 def main(args):
+    print(args)
+
     tags = get_recent_matching_tags(args.regex)
+    print(f"{tags=}")
+
     repo = args.repo
 
     if args.head:
+        print(f"{args.head=}")
         if len(tags) < 1:
             print(f"Not enough tags matching pattern: {args.regex}", file=sys.stderr)
             sys.exit(1)
@@ -116,14 +121,17 @@ def main(args):
         newer, older = tags[0], tags[1]
         changelog_newer = newer
 
+    print("Getting commits...")
     commits = github_compare(repo, older, newer)
+    print("Getting contribubors...")
     contributors = get_contributors(commits)
+    print("Checking for first contributions...")
     first_contributions = get_first_contributions(repo, contributors)
 
     contributors = {f"@{author}" for author in contributors}
     excludes = {'@dependabot[bot]', '@thunderbird-botmobile[bot]', '@weblate'}
     contributors -= excludes
-
+    print("producing output")
     with open(args.output_file, "w", encoding='utf-8') as f:
         print("\nContributors:", file=f)
         thanks_to = "Thanks to: " + ', '.join(sorted(contributors, key=str.casefold))
